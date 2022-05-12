@@ -1,95 +1,160 @@
-import React from 'react'
-import pokemon from './pokemon.json'
+import React, { useReducer } from 'react'
 import './App.css'
+import { PokemonInterface } from './types/PokemonType'
+import PokemonInfo from './components/PokemonInfo'
+import PokemonFilter from './components/PokemonFilter'
+import PokemonTable from './components/PokemonTable'
+import PokemonContext from './components/POKEMONContext'
 
-interface PokemonInterface {
-  id: number
-  name: Name
-  type: string[]
-  base: Base
-}
+// class App extends React.Component<
+//   {},
+//   {
+//     filter: string
+//     selectItem: PokemonInterface | null
+//     pokemon: PokemonInterface[]
+//   }
+// > {
+//   constructor(props: any) {
+//     super(props)
+//     this.state = {
+//       filter: '',
+//       selectItem: null,
+//       pokemon: [],
+//     }
+//   }
 
-interface Base {
-  HP: number
-  Attack: number
-  Defense: number
-  'Sp. Attack': number
-  'Sp. Defense': number
-  Speed: number
-}
+//   componentDidMount() {
+//     fetch('http://localhost:3000/ts-cra-test/pokemon.json')
+//       .then((resp) => resp.json())
+//       .then((pokemon) => this.setState({ ...this.state, pokemon }))
+//   }
 
-interface Name {
-  english: string
-  japanese: string
-  chinese: string
-  french: string
-}
+//   render(): React.ReactNode {
+//     return (
+//       <PokemonContext.Provider value={{
 
-const PokemonRow = ({
-  pokemonProps,
-  onSelect,
-}: {
-  pokemonProps: PokemonInterface
-  onSelect: { (p: PokemonInterface): void }
-}) => {
-  return (
-    <tr>
-      <td>{pokemonProps.name.english}</td>
-      <td>{pokemonProps.type.join(', ')}</td>
-      <td>
-        <button onClick={() => onSelect(pokemonProps)}>Sellect!</button>
-      </td>
-    </tr>
-  )
+//       }}>
+//         <div
+//           style={{
+//             margin: 'auto',
+//             width: 800,
+//             paddingTop: '1rem',
+//           }}
+//         >
+//           <h1 className="title">Pokemon Search</h1>
+//           <div style={{ display: 'grid', gridTemplateColumns: '70% 80%', gridColumnGap: '1rem' }}>
+//             <div style={{ display: 'grid', gridTemplateColumns: '70% 30%', gridColumnGap: '1rem' }}>
+//               <div>
+//                 <PokemonFilter
+//                   filter={this.state.filter}
+//                   filterSet={(val: string) => this.setState({ ...this.state, filter: val })}
+//                 />
+//                 <PokemonTable
+//                   filter={this.state.filter}
+//                   pokemon={this.state.pokemon}
+//                   setSelectItem={(pokemon: PokemonInterface) =>
+//                     this.setState({ ...this.state, selectItem: pokemon })
+//                   }
+//                 />
+//               </div>
+//             </div>
+//             {this.state.selectItem && <PokemonInfo {...this.state.selectItem} />}
+//           </div>
+//         </div>
+//       </PokemonContext.Provider>
+//     )
+//   }
+// }
+
+type PokemonReducerType =
+  | { type: 'SET_FILTER'; payload: string }
+  | { type: 'SET_POKEMON'; payload: PokemonInterface[] }
+  | { type: 'SET_SELECTED_POKEMON'; payload: PokemonInterface }
+
+const pokemonReducer = (state: any, action: PokemonReducerType) => {
+  switch (action.type) {
+    case 'SET_FILTER':
+      return {
+        ...state,
+        filter: action.payload,
+      }
+    case 'SET_POKEMON':
+      return {
+        ...state,
+        pokemon: action.payload,
+      }
+    case 'SET_SELECTED_POKEMON':
+      return {
+        ...state,
+        selectItem: action.payload,
+      }
+    default:
+      throw new Error('Error no action')
+  }
 }
 
 function App() {
-  const [filter, setFilter] = React.useState('')
-  const [selectItem, setSelectItem] = React.useState<PokemonInterface | null>(null)
+  // const [filter, setFilter] = React.useState('')
+  // const [selectItem, setSelectItem] = React.useState<PokemonInterface | null>(null)
+  // const [pokemon, setPokemon] = React.useState([])
+  const [state, dispatch] = useReducer(pokemonReducer, {
+    pokemon: [],
+    filter: '',
+    selectItem: null,
+  })
+
+  // React.useEffect(() => {
+  //   fetch('http://localhost:3000/ts-cra-test/pokemon.json')
+  //     .then((resp) => resp.json())
+  //     .then((p) => setPokemon(p))
+  // }, [filter])
+
+  React.useEffect(() => {
+    fetch('http://localhost:3000/ts-cra-test/pokemon.json')
+      .then((resp) => resp.json())
+      .then((p) =>
+        dispatch({
+          type: 'SET_POKEMON',
+          payload: p,
+        })
+      )
+  }, [state.filter])
+
+  if (!state.pokemon) {
+    return <div>Loading data</div>
+  }
+  // filter,
+  // setFilter,
+  // selectItem,
+  // setSelectItem,
+  // pokemon,
+  // setPokemon,
   return (
-    <div
-      style={{
-        margin: 'auto',
-        width: 800,
-        paddingTop: '1rem',
+    <PokemonContext.Provider
+      value={{
+        state,
+        dispatch,
       }}
     >
-      <h1 className="title">Pokemon Search</h1>
-      <div style={{ display: 'grid', gridTemplateColumns: '70% 80%', gridColumnGap: '1rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '70% 30%', gridColumnGap: '1rem' }}>
-          <div>
-            <input type="text" value={filter} onChange={(evt) => setFilter(evt.target.value)} />
-            <table width="100%">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pokemon
-                  .filter((p: PokemonInterface) =>
-                    p.name.english.toLowerCase().includes(filter.toLowerCase())
-                  )
-                  .slice(0, 20)
-                  .map((p: PokemonInterface) => (
-                    <PokemonRow
-                      key={p.id}
-                      pokemonProps={p}
-                      onSelect={(pokemonValue: PokemonInterface) => setSelectItem(pokemonValue)}
-                    />
-                  ))}
-              </tbody>
-            </table>
+      <div
+        style={{
+          margin: 'auto',
+          width: 800,
+          paddingTop: '1rem',
+        }}
+      >
+        <h1 className="title">Pokemon Search</h1>
+        <div style={{ display: 'grid', gridTemplateColumns: '70% 80%', gridColumnGap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '70% 30%', gridColumnGap: '1rem' }}>
+            <div>
+              <PokemonFilter />
+              <PokemonTable />
+            </div>
           </div>
+          <PokemonInfo />
         </div>
-        {selectItem && (
-          <div>
-            <h1>{selectItem.name.english}</h1>
-          </div>
-        )}
       </div>
-    </div>
+    </PokemonContext.Provider>
   )
 }
 
