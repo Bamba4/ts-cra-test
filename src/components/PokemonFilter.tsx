@@ -1,25 +1,10 @@
-import { useContext } from 'react'
-import PokemonContext from './POKEMONContext'
+import useStore from '../store'
 
 const PokemonFilter = () => {
-  // const { filter, setFilter } = useContext(PokemonContext)
-  const {
-    state: { filter },
-    dispatch,
-  } = useContext(PokemonContext)
+  const filter = useStore((state: any) => state.filter)
+  const setFilter = useStore((state: any) => state.setFilter)
 
-  return (
-    <input
-      type="text"
-      value={filter}
-      onChange={(evt) =>
-        dispatch({
-          type: 'SET_FILTER',
-          payload: evt.target.value,
-        })
-      }
-    />
-  )
+  return <input type="text" value={filter} onChange={(evt) => setFilter(evt.target.value)} />
 }
 
 export default PokemonFilter

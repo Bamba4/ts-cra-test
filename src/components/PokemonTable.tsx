@@ -1,4 +1,5 @@
 import { useContext } from 'react'
+import useStore from '../store'
 import { PokemonInterface } from '../types/PokemonType'
 import PokemonContext from './POKEMONContext'
 import PokemonRow from './PokemonRow'
@@ -41,11 +42,10 @@ import PokemonRow from './PokemonRow'
 // }
 
 const PokemonTable = () => {
-  // const { filter, pokemon, setSelectItem } = useContext(PokemonContext) Use context
-  const {
-    state: { pokemon, filter },
-    dispatch,
-  } = useContext(PokemonContext)
+  const pokemon = useStore((state: any) => state.pokemon)
+  const filter = useStore((state: any) => state.filter)
+  const setSelectItem = useStore((state: any) => state.setSelectItem)
+
   return (
     <table width="100%">
       <thead>
@@ -64,12 +64,7 @@ const PokemonTable = () => {
             <PokemonRow
               key={p.id}
               pokemonProps={p}
-              onSelect={(pokemonValue: PokemonInterface) =>
-                dispatch({
-                  type: 'SET_SELECTED_POKEMON',
-                  payload: pokemonValue,
-                })
-              }
+              onSelect={(pokemonValue: PokemonInterface) => setSelectItem(pokemonValue)}
             />
           ))}
       </tbody>

@@ -1,10 +1,12 @@
 import { useContext } from 'react'
+import useStore from '../store'
 import PokemonContext from './POKEMONContext'
 
 const PokemonInfo = () => {
-  const {
-    state: { selectItem },
-  } = useContext(PokemonContext)
+  const selectItem = useStore((state: any) => state.selectItem)
+  // const {
+  //   state: { selectItem },
+  // } = useContext(PokemonContext)
   return selectItem ? (
     <div>
       <h1>{selectItem.name.english}</h1>
